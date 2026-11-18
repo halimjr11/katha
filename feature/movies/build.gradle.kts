@@ -27,14 +27,15 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    api(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":domain"))
 
+    // UI Dependencies
+    api(libs.bundles.koin.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
     implementation(libs.bundles.navigation3)
-    implementation(libs.bundles.koin.compose)
     implementation(libs.androidx.paging.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.runtime.ktx)
