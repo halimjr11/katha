@@ -7,3 +7,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.ksp) apply false
 }
+
+// Local unit tests run on JUnit 5 (Jupiter). Instrumented tests (androidTest) stay on JUnit 4.
+subprojects {
+    tasks.withType<Test>().configureEach { useJUnitPlatform() }
+}

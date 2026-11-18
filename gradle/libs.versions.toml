@@ -20,6 +20,7 @@ koin = "4.2.2"
 retrofit = "3.0.0"
 okhttp = "5.5.1"
 kotlinxSerialization = "1.13.0"
+gson = "2.13.1"
 
 # Coroutines & Paging 3
 coroutines = "1.11.0"
@@ -30,6 +31,8 @@ coil = "3.6.3"
 
 # Testing
 junit = "4.13.2"
+junit5 = "5.12.2"
+junitPlatform = "1.12.2"
 androidxJunit = "1.3.0"
 espresso = "3.7.0"
 mockk = "1.13.17"
@@ -62,13 +65,16 @@ androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 
 # Koin Dependency Injection
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
 
 # Networking & Kotlinx Serialization
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
-retrofit-kotlinx-serialization = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -90,6 +96,8 @@ coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp"
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit5" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
@@ -118,17 +126,18 @@ koin-compose = [
 ]
 networking = [
     "retrofit-core",
-    "retrofit-kotlinx-serialization",
+    "retrofit-gson",
+    "gson",
     "okhttp-core",
-    "okhttp-logging",
-    "kotlinx-serialization-json"
+    "okhttp-logging"
 ]
 coil = [
     "coil-compose",
     "coil-network-okhttp"
 ]
 unit-test = [
-    "junit",
+    "junit-jupiter",
+    "junit-platform-launcher",
     "kotlinx-coroutines-test",
     "mockk",
     "turbine"
