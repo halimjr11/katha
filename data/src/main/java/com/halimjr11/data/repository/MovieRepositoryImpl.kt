@@ -54,7 +54,7 @@ class MovieRepositoryImpl(
                 NetworkResult.Error(e.message(), e.code(), e)
             } catch (e: IOException) {
                 NetworkResult.Error(e.message ?: "Network error", null, e)
-            } catch (e: IllegalArgumentException) {
+            } catch (e: Exception) {
                 NetworkResult.Error(e.message ?: "Invalid response", null, e)
             }
         }

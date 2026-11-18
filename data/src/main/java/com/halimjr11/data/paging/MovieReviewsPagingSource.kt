@@ -5,8 +5,7 @@ import androidx.paging.PagingState
 import com.halimjr11.data.mapper.toDomain
 import com.halimjr11.domain.model.Review
 import com.halimjr11.network.api.TmdbApiService
-import retrofit2.HttpException
-import java.io.IOException
+import kotlinx.coroutines.CancellationException
 
 class MovieReviewsPagingSource(
     private val api: TmdbApiService,
@@ -23,9 +22,10 @@ class MovieReviewsPagingSource(
                 prevKey = if (page == 1) null else page - 1,
                 nextKey = if (page >= (response.totalPages ?: 0) || results.isEmpty()) null else page + 1
             )
-        } catch (e: IOException) {
-            LoadResult.Error(e)
-        } catch (e: HttpException) {
+        } catch (e: CancellationException) {
+            throw e // never turn cancellation into a load error
+        } catch (e: Exception) {
+            // IOException, HttpException, and malformed JSON (a RuntimeException with Gson)
             LoadResult.Error(e)
         }
     }

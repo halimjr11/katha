@@ -1,9 +1,9 @@
 package com.halimjr11.data.mapper
 
 import com.halimjr11.network.dto.VideoDto
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 
 class VideoMapperTest {
     private fun v(key: String, type: String, official: Boolean = false, site: String = "YouTube") =

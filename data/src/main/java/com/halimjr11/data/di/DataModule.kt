@@ -8,7 +8,11 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-// TmdbApiService comes from networkModule (core:network)
+/**
+ * TmdbApiService comes from networkModule (core:network)
+ * define DispatcherProvider as a singleton
+ * define MovieRepository as a singleton
+ */
 val dataModule = module {
     singleOf(::DefaultDispatcherProvider) bind DispatcherProvider::class
     singleOf(::MovieRepositoryImpl) bind MovieRepository::class

@@ -24,13 +24,13 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    api(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":domain"))
 
+    api(libs.bundles.koin.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.paging.common)
-    implementation(libs.bundles.koin.compose)
     implementation(libs.retrofit.core)
 
     testImplementation(libs.bundles.unit.test)
