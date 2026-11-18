@@ -2,7 +2,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 val localProperties = Properties().apply {
@@ -24,6 +23,7 @@ android {
         buildConfigField("String", "BASE_URL", "\"https://api.themoviedb.org/3/\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
     buildFeatures {
         buildConfig = true
@@ -40,8 +40,10 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    api(project(":core:common"))
+    api(libs.bundles.koin.compose)
+    api(libs.kotlinx.coroutines.android)
     implementation(libs.bundles.networking)
-    implementation(libs.bundles.koin.compose)
-    implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(libs.bundles.unit.test)
 }

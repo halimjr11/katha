@@ -1,30 +1,40 @@
 package com.halimjr11.network.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class ReviewResponseDto(
-    @SerialName("id") val id: Int? = null,
-    @SerialName("page") val page: Int? = null,
-    @SerialName("results") val results: List<ReviewDto>? = null,
-    @SerialName("total_pages") val totalPages: Int? = null,
-    @SerialName("total_results") val totalResults: Int? = null
+    @SerializedName("id")
+    val id: Int? = null,
+    @SerializedName("page")
+    val page: Int? = null,
+    @SerializedName("results")
+    val results: List<ReviewDto>? = null,
+    @SerializedName("total_pages")
+    val totalPages: Int? = null,
+    @SerializedName("total_results")
+    val totalResults: Int? = null
 )
 
-@Serializable
 data class ReviewDto(
-    @SerialName("id") val id: String? = null,
-    @SerialName("author") val author: String? = null,
-    @SerialName("author_details") val authorDetails: AuthorDetailsDto? = null,
-    @SerialName("content") val content: String? = null,
-    @SerialName("created_at") val createdAt: String? = null
+    @SerializedName("id")
+    val id: String? = null,
+    @SerializedName("author")
+    val author: String? = null,
+    @SerializedName("author_details")
+    val authorDetails: AuthorDetailsDto? = null,
+    @SerializedName("content")
+    val content: String? = null,
+    @SerializedName("created_at")
+    val createdAt: String? = null
 )
 
-@Serializable
 data class AuthorDetailsDto(
-    @SerialName("name") val name: String? = null,
-    @SerialName("username") val username: String? = null,
-    @SerialName("avatar_path") val avatarPath: String? = null,
-    @SerialName("rating") val rating: Double? = null
+    @SerializedName("name")
+    val name: String? = null,
+    @SerializedName("username")
+    val username: String? = null,
+    @SerializedName("avatar_path")
+    val avatarPath: String? = null,
+    @SerializedName("rating")
+    val rating: Double? = null
 )

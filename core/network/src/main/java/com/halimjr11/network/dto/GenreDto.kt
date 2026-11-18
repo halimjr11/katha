@@ -1,15 +1,15 @@
 package com.halimjr11.network.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class GenreResponseDto(
-    @SerialName("genres") val genres: List<GenreDto>? = null
+    @SerializedName("genres")
+    val genres: List<GenreDto>? = null
 )
 
-@Serializable
 data class GenreDto(
-    @SerialName("id") val id: Int? = null,
-    @SerialName("name") val name: String? = null
+    @SerializedName("id")
+    val id: Int? = null,
+    @SerializedName("name")
+    val name: String? = null
 )

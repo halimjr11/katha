@@ -1,39 +1,58 @@
 package com.halimjr11.network.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class DiscoverMoviesResponseDto(
-    @SerialName("page") val page: Int? = null,
-    @SerialName("results") val results: List<MovieDto>? = null,
-    @SerialName("total_pages") val totalPages: Int? = null,
-    @SerialName("total_results") val totalResults: Int? = null
+    @SerializedName("page")
+    val page: Int? = null,
+    @SerializedName("results")
+    val results: List<MovieDto>? = null,
+    @SerializedName("total_pages")
+    val totalPages: Int? = null,
+    @SerializedName("total_results")
+    val totalResults: Int? = null
 )
 
-@Serializable
 data class MovieDto(
-    @SerialName("id") val id: Int? = null,
-    @SerialName("title") val title: String? = null,
-    @SerialName("poster_path") val posterPath: String? = null,
-    @SerialName("backdrop_path") val backdropPath: String? = null,
-    @SerialName("release_date") val releaseDate: String? = null,
-    @SerialName("vote_average") val voteAverage: Double? = null,
-    @SerialName("overview") val overview: String? = null
+    @SerializedName("id")
+    val id: Int? = null,
+    @SerializedName("title")
+    val title: String? = null,
+    @SerializedName("poster_path")
+    val posterPath: String? = null,
+    @SerializedName("backdrop_path")
+    val backdropPath: String? = null,
+    @SerializedName("release_date")
+    val releaseDate: String? = null,
+    @SerializedName("vote_average")
+    val voteAverage: Double? = null,
+    @SerializedName("overview")
+    val overview: String? = null
 )
 
-@Serializable
 data class MovieDetailDto(
-    @SerialName("id") val id: Int? = null,
-    @SerialName("title") val title: String? = null,
-    @SerialName("tagline") val tagline: String? = null,
-    @SerialName("overview") val overview: String? = null,
-    @SerialName("poster_path") val posterPath: String? = null,
-    @SerialName("backdrop_path") val backdropPath: String? = null,
-    @SerialName("release_date") val releaseDate: String? = null,
-    @SerialName("runtime") val runtime: Int? = null,
-    @SerialName("vote_average") val voteAverage: Double? = null,
-    @SerialName("vote_count") val voteCount: Int? = null,
-    @SerialName("status") val status: String? = null,
-    @SerialName("genres") val genres: List<GenreDto>? = null
+    @SerializedName("id")
+    val id: Int? = null,
+    @SerializedName("title")
+    val title: String? = null,
+    @SerializedName("tagline")
+    val tagline: String? = null,
+    @SerializedName("overview")
+    val overview: String? = null,
+    @SerializedName("poster_path")
+    val posterPath: String? = null,
+    @SerializedName("backdrop_path")
+    val backdropPath: String? = null,
+    @SerializedName("release_date")
+    val releaseDate: String? = null,
+    @SerializedName("runtime")
+    val runtime: Int? = null,
+    @SerializedName("vote_average")
+    val voteAverage: Double? = null,
+    @SerializedName("vote_count")
+    val voteCount: Int? = null,
+    @SerializedName("status")
+    val status: String? = null,
+    @SerializedName("genres")
+    val genres: List<GenreDto>? = null
 )

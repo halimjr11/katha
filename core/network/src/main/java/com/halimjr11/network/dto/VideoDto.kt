@@ -1,21 +1,27 @@
 package com.halimjr11.network.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class VideoResponseDto(
-    @SerialName("id") val id: Int? = null,
-    @SerialName("results") val results: List<VideoDto>? = null
+    @SerializedName("id")
+    val id: Int? = null,
+    @SerializedName("results")
+    val results: List<VideoDto>? = null
 )
 
-@Serializable
 data class VideoDto(
-    @SerialName("id") val id: String? = null,
-    @SerialName("key") val key: String? = null,
-    @SerialName("name") val name: String? = null,
-    @SerialName("site") val site: String? = null,
-    @SerialName("size") val size: Int? = null,
-    @SerialName("type") val type: String? = null,
-    @SerialName("official") val official: Boolean? = null
+    @SerializedName("id")
+    val id: String? = null,
+    @SerializedName("key")
+    val key: String? = null,
+    @SerializedName("name")
+    val name: String? = null,
+    @SerializedName("site")
+    val site: String? = null,
+    @SerializedName("size")
+    val size: Int? = null,
+    @SerializedName("type")
+    val type: String? = null,
+    @SerializedName("official")
+    val official: Boolean? = null
 )
