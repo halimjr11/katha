@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 import retrofit2.HttpException
@@ -105,6 +106,31 @@ class MovieRepositoryImplTest {
         )
         val items = repo.discoverMovies(null).asSnapshot()
         assertEquals(listOf("Popular"), items.map { it.title })
+    }
+
+    // highlights: first page only, capped at the limit, invalid items dropped
+    @ParameterizedTest(name = "{0} reviews on page 1, limit {1} -> {2} highlights")
+    @CsvSource("5, 3, 3", "2, 3, 2", "0, 3, 0", "5, 1, 1")
+    fun highlightsAreCappedAtTheLimit(onPage: Int, limit: Int, expected: Int) = runTest {
+        coEvery { api.getMovieReviews(7, 1) } returns ReviewResponseDto(
+            results = List(onPage) { ReviewDto(id = "r$it", author = "A") }, totalPages = 3
+        )
+        val highlights = (repo.getReviewHighlights(7, limit) as NetworkResult.Success).data
+        assertEquals(expected, highlights.size)
+        assertEquals(List(expected) { "r$it" }, highlights.map { it.id })
+    }
+
+    @Test fun highlightsSkipReviewsWithoutId() = runTest {
+        coEvery { api.getMovieReviews(7, 1) } returns ReviewResponseDto(
+            results = listOf(ReviewDto(id = null), ReviewDto(id = "ok")), totalPages = 1
+        )
+        val highlights = (repo.getReviewHighlights(7, 3) as NetworkResult.Success).data
+        assertEquals(listOf("ok"), highlights.map { it.id })
+    }
+
+    @Test fun highlightsFailureBecomesError() = runTest {
+        coEvery { api.getMovieReviews(7, 1) } throws IOException("offline")
+        assertTrue(repo.getReviewHighlights(7, 3) is NetworkResult.Error)
     }
 
     @Test fun reviewsFlowEmitsMappedReviews() = runTest {

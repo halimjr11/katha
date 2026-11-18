@@ -44,6 +44,9 @@ class MovieRepositoryImpl(
     override fun getMovieReviews(movieId: Int): Flow<PagingData<Review>> =
         Pager(pagingConfig) { MovieReviewsPagingSource(api, movieId) }.flow
 
+    override suspend fun getReviewHighlights(movieId: Int, limit: Int): NetworkResult<List<Review>> =
+        safeCall { api.getMovieReviews(movieId, 1).results.orEmpty().mapNotNull { it.toDomain() }.take(limit) }
+
     private suspend fun <T> safeCall(block: suspend () -> T): NetworkResult<T> =
         withContext(dispatcherProvider.io) {
             try {
