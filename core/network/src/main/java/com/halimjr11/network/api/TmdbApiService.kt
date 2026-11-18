@@ -17,7 +17,7 @@ interface TmdbApiService {
 
     @GET("discover/movie")
     suspend fun discoverMovies(
-        @Query("with_genres") genreId: Int,
+        @Query("with_genres") genreId: Int?,
         @Query("page") page: Int
     ): DiscoverMoviesResponseDto
 
