@@ -33,9 +33,9 @@ Multi-Module Clean Architecture · MVVM · Unidirectional Data Flow
 graph TD
     APP[":app"] --> F["feature:genres · movies · details"]
     APP --> DATA[":data"]
-    F --> DOMAIN[":domain<br/>(Pure Kotlin)"]
+    F --> DOMAIN[":domain<br/>(logika murni)"]
     F --> UI[":core:ui"]
-    F --> COMMON[":core:common<br/>(Pure Kotlin)"]
+    F --> COMMON[":core:common<br/>(logika murni)"]
     DATA --> DOMAIN
     DATA --> NET[":core:network"]
     DATA --> COMMON
@@ -49,9 +49,9 @@ graph TD
 
 | Modul | Tipe | Tanggung jawab |
 |---|---|---|
-| `:core:common` | Pure Kotlin (JVM) | `NetworkResult`, `DispatcherProvider`, `KathaFormatters` |
-| `:core:network` | Android Library | OkHttp, `AuthInterceptor`, Retrofit, `TmdbApiService`, DTO (semua field nullable), `networkModule` |
-| `:domain` | Pure Kotlin (JVM) | Model non-null siap UI, `MovieRepository`, 5 use case |
+| `:core:common` | Android Library (tanpa UI) | `NetworkResult`, `DispatcherProvider`, `KathaFormatters`; expose `coroutines-core` dan bundle Koin (`api`) |
+| `:core:network` | Android Library | OkHttp, `TokenInterceptor`, Retrofit, `TmdbApiService`, DTO (semua field nullable), `networkModule` |
+| `:domain` | Android Library (tanpa UI, logika murni) | Model non-null (masing-masing satu file, semua punya default), `MovieRepository`, 5 use case, `domainModule` |
 | `:data` | Android Library | Mapper DTO → domain, `PagingSource`, `MovieRepositoryImpl`, `dataModule` |
 | `:core:ui` | Android Compose | Tema & komponen bersama |
 | `:feature:*` | Android Compose | Screen, ViewModel, `UiState`, modul Koin per fitur |
@@ -116,12 +116,20 @@ TMDB_BEARER_TOKEN="eyJhbGciOi..."
 
 ```bash
 ./gradlew assembleDebug
-./gradlew :domain:build :data:testDebugUnitTest
+./gradlew testDebugUnitTest :domain:test :core:common:test
 ```
 
 </details>
 
 **Prasyarat:** JDK 17, Android Studio terbaru (AGP 9.x), minSdk 24.
+
+## 🧪 Testing
+
+| Jenis | Status |
+|---|---|
+| Unit test (JUnit 5 Jupiter dengan `@ParameterizedTest`, MockK, Turbine, paging-testing): 142 test di semua modul | ✅ |
+| Uji manual di emulator ([hasil QA](docs/qa_test_cases_and_summary.md)) | ✅ |
+| Compose UI test dan instrumented test (`androidTest`) | 🚧 Segera ditambahkan |
 
 ## 🧰 Tech Stack
 
@@ -132,23 +140,28 @@ TMDB_BEARER_TOKEN="eyJhbGciOi..."
 | Network | Retrofit, OkHttp, kotlinx.serialization |
 | Paging | Paging 3 |
 | Gambar | Coil 3 |
-| Test | JUnit, MockK, Turbine, coroutines-test |
+| Test | JUnit 5 (Jupiter + params), MockK, Turbine, coroutines-test, paging-testing (Compose UI / instrumented test: segera, tetap JUnit 4) |
 
 > ⚠️ **AGP 9.0+**: jangan apply `org.jetbrains.kotlin.android` di modul Android, Kotlin sudah built-in.
+>
+> ⚠️ `:core:common` dan `:domain` adalah Android library tanpa UI/Android API, jadi bundle Koin (`koin-android`) boleh di-expose lewat `api`. Jangan mengimpor class Android di `:domain`.
 
 ## 📚 Dokumentasi
 
 - 📋 [Product Requirements (PRD)](docs/product_requirements_document_prd.md)
 - 🏛 [Arsitektur & ADR](docs/architecture_engineering_decisions.md)
+- ✅ [Test case QA & ringkasan](docs/qa_test_cases_and_summary.md)
 - 🌐 [Spesifikasi API TMDB](docs/tmdb_api_specification.md)
 
 ## 🚧 Status
 
 - [x] `:core:common`, `:core:network`, `:domain`, `:data`
-- [ ] `:core:ui` (tema & komponen)
-- [ ] `:feature:genres`, `:feature:movies`, `:feature:details`
-- [ ] Wiring Koin & navigasi di `:app`
-- [ ] `KoinModulesTest`
+- [x] `:core:ui` (tema & komponen)
+- [x] `:feature:genres`, `:feature:movies`, `:feature:details`
+- [x] Wiring Koin & Navigation 3 di `:app`
+- [x] Unit test (142 test, termasuk `KoinModulesTest`)
+- [x] Uji manual di emulator
+- [ ] Compose UI test dan instrumented test (**segera ditambahkan**)
 
 ---
 

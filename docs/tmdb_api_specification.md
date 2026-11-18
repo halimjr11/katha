@@ -6,7 +6,7 @@
   * **Poster Size:** `w500` (`https://image.tmdb.org/t/p/w500{poster_path}`)
   * **Backdrop Size:** `w780` (`https://image.tmdb.org/t/p/w780{backdrop_path}`)
   * **Avatar Size:** `w185` (`https://image.tmdb.org/t/p/w185{avatar_path}`)
-* **Authentication (Header via `AuthInterceptor`):**
+* **Authentication (Header via `TokenInterceptor`):**
   ```http
   Authorization: Bearer <TMDB_READ_ACCESS_TOKEN>
   Accept: application/json
@@ -16,6 +16,8 @@
   * `404 Not Found`: Resource / `movie_id` tidak ditemukan (`status_code: 34`).
   * `429 Too Many Requests`: Rate limit terlampaui.
   * `500 / 503`: Server error dari sisi TMDB.
+
+> **Catatan implementasi:** parameter `language` dan `sort_by` tidak dikirim oleh `TmdbApiService`; default TMDB (`en-US`, `popularity.desc`) berlaku. Semua field DTO bersifat nullable dan dipetakan ke model domain non-null di `:data`.
 
 ---
 

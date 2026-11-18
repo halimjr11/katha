@@ -2,9 +2,9 @@
 
 ## 1. Document Control & Overview
 * **Product Name:** Katha *(Sanskrit: "kisah" atau "narasi" — merepresentasikan esensi bahwa di balik setiap karya sinema terdapat cerita yang bermakna untuk dijelajahi)*
-* **Package Name:** `com.halim.katha`
-* **Tech Stack:** Kotlin, Jetpack Compose (Material 3), MVVM, Clean Architecture, Coroutines & Flow, Koin 4.2.2, Paging 3, Retrofit 2, Coil.
-* **Target Platform:** Android (Min SDK 24 / Android 7.0, Target SDK 35).
+* **Package Name:** `com.halimjr11.katha`
+* **Tech Stack:** Kotlin, Jetpack Compose (Material 3), MVVM, Clean Architecture, Coroutines & Flow, Koin 4.2.2, Navigation 3, Paging 3, Retrofit, Coil 3.
+* **Target Platform:** Android (Min SDK 24 / Android 7.0, Target SDK 37).
 * **Objective:** Menyediakan aplikasi eksplorasi film berbasis TMDB API dengan arsitektur *scalable*, performa UI responsif, penanganan pagination *endless scrolling*, serta manajemen *error/edge-case* yang tangguh.
 
 ---
@@ -62,7 +62,7 @@
   * Bagian **Overview / Sinopsis** lengkap.
 * **Acceptance Criteria:**
   * **AC 3.1 (Positive):** Seluruh informasi utama ter-render akurat sesuai `movieId`.
-  * **AC 3.2 (Negative):** Jika `overview` kosong, tampilkan *"No synopsis available."*; jika `runtime` null/0, tampilkan *"-"*.
+  * **AC 3.2 (Negative):** Jika `overview` kosong, tampilkan *"No synopsis available."*; jika `runtime` null/0, tampilkan *"N/A"*.
 
 ### FR-04: Movie YouTube Trailer (AC 5)
 * **Deskripsi:** Pengguna dapat menonton trailer resmi film dari YouTube.
@@ -86,7 +86,8 @@
 ---
 
 ## 4. Non-Functional Requirements (NFR)
-* **Architecture:** Strict separation of concerns (**Presentation** -> **Domain** -> **Data**). Layer `Domain` harus 100% Pure Kotlin (tanpa dependensi Android SDK, Retrofit, maupun Koin).
+* **Architecture:** Strict separation of concerns (**Presentation** -> **Domain** -> **Data**). Layer `Domain` tidak boleh memakai class Android, Retrofit, maupun OkHttp (modul Android library tanpa UI; Koin di-expose lewat `:core:common`).
 * **Concurrency:** Menggunakan `viewModelScope`, `Dispatchers.IO`, dan `async/await` untuk pemanggilan paralel (`getMovieDetail` & `getMovieTrailer`).
 * **Security:** `TMDB_BEARER_TOKEN` disimpan di `local.properties` dan diakses melalui `BuildConfig`, tidak pernah di-*hardcode* ke dalam repository Git.
-* **Testability:** Unit test mencakup verifikasi DI graph (`koin-test` `.verify()`), `PagingSource`, `Mapper`, dan `ViewModel` (*positive & negative cases*).
+* **Testability:** Unit test mencakup verifikasi DI graph (`koin-test` `.verify()`), `PagingSource`, `Mapper`, `Repository`, use case, dan `ViewModel` (*positive & negative cases*).
+  * **Catatan:** Compose UI test dan instrumented test (`androidTest`) belum ada dan akan segera ditambahkan.
