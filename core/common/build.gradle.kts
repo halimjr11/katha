@@ -1,11 +1,20 @@
 plugins {
-    id("java-library")
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.android.library)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+android {
+    namespace = "com.halimjr11.common"
+    compileSdk {
+        version = release(37)
+    }
+
+    defaultConfig {
+        minSdk = 24
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
 
 kotlin {
@@ -13,7 +22,9 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
+    // api: DispatcherProvider and the Koin Module type appear in public signatures
+    api(libs.kotlinx.coroutines.core)
+    api(libs.bundles.koin.compose)
 
     testImplementation(libs.bundles.unit.test)
 }

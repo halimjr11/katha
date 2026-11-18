@@ -2,7 +2,7 @@
 
 ## 1. Multi-Module Architecture & Dependency Rules
 
-Aplikasi **Katha** (`com.halim.katha`) menerapkan **Multi-Module Clean Architecture + MVVM** dengan *Unidirectional Data Flow (UDF)*. Pemisahan modul di level Gradle memastikan batas dependensi terjaga secara fisik oleh compiler, mempercepat *incremental build*, serta menjaga modul `:domain` tetap 100% Pure Kotlin.
+Aplikasi **Katha** (`com.halimjr11.katha`) menerapkan **Multi-Module Clean Architecture + MVVM** dengan *Unidirectional Data Flow (UDF)*. Pemisahan modul di level Gradle memastikan batas dependensi terjaga secara fisik oleh compiler, mempercepat *incremental build*, serta menjaga modul `:domain` tetap berisi logika murni (tanpa class Android).
 
 ### A. Struktur Direktori Multi-Module
 
@@ -10,22 +10,22 @@ Aplikasi **Katha** (`com.halim.katha`) menerapkan **Multi-Module Clean Architect
 Katha/
 ├── app/                            # Application shell, MainActivity, AppNavGraph, startKoin { ... }
 ├── core/
-│   ├── common/                     # Pure Kotlin: NetworkResult<T>, DispatcherProvider, Date/Runtime formatters
+│   ├── common/                     # Android library (tanpa UI): NetworkResult<T>, DispatcherProvider, Date/Runtime formatters
 │   ├── network/                    # Android Library: OkHttp, AuthInterceptor, Retrofit, TmdbApiService, DTOs
 │   └── ui/                         # Android Compose: KathaTheme, FullScreenLoading, FullScreenError, PagingFooter
-├── domain/                         # Pure Kotlin (java-library): Models, Repository Interfaces, UseCases (NO Android/Koin)
+├── domain/                         # Android library (tanpa UI): Models, Repository Interfaces, UseCases, domainModule (tanpa class Android)
 ├── data/                           # Android Library: MovieRepositoryImpl, Mappers, PagingSources, dataModule
 └── feature/
     ├── genres/                     # Android Compose: GenreListScreen, GenreListViewModel, genresModule
-    ├── movielist/                  # Android Compose: MovieByGenreScreen, MovieByGenreViewModel, movieListModule
-    └── moviedetail/                # Android Compose: MovieDetailScreen, MovieDetailViewModel, movieDetailModule
+    ├── movies/                     # Android Compose: MovieByGenreScreen, MovieByGenreViewModel, movieListModule
+    └── details/                    # Android Compose: MovieDetailScreen, MovieDetailViewModel, movieDetailModule
 ```
 
 ### B. Strict Dependency Matrix
 * `:app` $\rightarrow$ Mengoordinasikan seluruh modul (`:core:*`, `:domain`, `:data`, `:feature:*`) untuk merakit navigasi (`NavHost`) dan mendaftarkan seluruh Koin modules.
 * `:feature:*` $\rightarrow$ **Hanya** bergantung pada `:domain`, `:core:ui`, dan `:core:common`. **Dilarang** mengakses `:data` atau `:core:network` secara langsung (setiap fitur wajib berkomunikasi melalui *Use Cases*).
 * `:data` $\rightarrow$ Bergantung pada `:domain`, `:core:network`, dan `:core:common`.
-* `:domain` $\rightarrow$ **Pure Kotlin (`id("java-library")`)**, hanya bergantung pada `kotlinx-coroutines-core` dan `androidx.paging:paging-common` (bebas dari Android SDK, Retrofit, maupun Koin).
+* `:domain` $\rightarrow$ **Android library tanpa UI** (logika murni, tanpa class Android), bergantung pada `:core:common` (yang meng-expose `kotlinx-coroutines-core` dan bundle Koin lewat `api`) dan `androidx.paging:paging-common`. Tidak boleh bergantung pada Retrofit/OkHttp.
 
 ### C. Modular System Architecture Diagram
 
@@ -33,16 +33,16 @@ Katha/
 graph TD
     subgraph AppShell [":app (Application & Navigation Host)"]
         APP[KathaApp<br/>startKoin]
-        NAV[AppNavGraph<br/>Jetpack Navigation Compose]
+        NAV[AppNavGraph<br/>Navigation 3]
     end
 
     subgraph FeatureLayer ["Feature Modules (Presentation + MVVM)"]
         F_GENRE[":feature:genres"<br/>GenreListScreen & ViewModel]
-        F_LIST[":feature:movielist"<br/>MovieByGenreScreen & ViewModel]
-        F_DETAIL[":feature:moviedetail"<br/>MovieDetailScreen & ViewModel]
+        F_LIST[":feature:movies"<br/>MovieByGenreScreen & ViewModel]
+        F_DETAIL[":feature:details"<br/>MovieDetailScreen & ViewModel]
     end
 
-    subgraph DomainLayer [":domain (Pure Kotlin JVM Module)"]
+    subgraph DomainLayer [":domain (Android library, logika murni)"]
         UC[Use Cases<br/>GetGenres, DiscoverMovies, GetDetail, GetTrailer, GetReviews]
         REPO_INT["<<interface>> MovieRepository"]
         MODELS[Domain Models<br/>Genre, Movie, MovieDetail, Review, VideoTrailer]
@@ -98,8 +98,8 @@ graph TD
 
 ### D. Strategi Koin Multi-Module
 * **Desentralisasi Koin Modules:** Setiap modul mendefinisikan module Koin-nya sendiri (`networkModule`, `dataModule`, `genresModule`, `movieListModule`, `movieDetailModule`).
-* **Isolasi `:domain`:** Karena `:domain` adalah *Pure Kotlin*, registrasi `UseCase` dilakukan di dalam modul fitur terkait atau `domainModule` di `:app` menggunakan `factoryOf(::GetGenresUseCase)`.
-* **Cross-Module Verification:** `KoinModulesTest` di `:app` menggabungkan seluruh modul dengan `includes(...)` dan menjalankan `.verify()` untuk memvalidasi kelengkapan graf dependensi lintas modul.
+* **`:domain` mendefinisikan `domainModule` sendiri:** `:core:common` meng-expose bundle Koin lewat `api`, sehingga `domainModule` (`factoryOf(::GetGenresUseCase)`, dst.) berada di `domain/.../di/DomainModule.kt`. `:core:common` dan `:domain` adalah Android library (bukan `java-library`) karena `koin-android` berupa AAR; modul JVM murni tidak bisa mengonsumsinya.
+* **Cross-Module Verification:** `KoinModulesTest` di `:app` menggabungkan seluruh modul (`appModules`) dengan `includes(...)` dan menjalankan `.verify(extraTypes = listOf(Int::class, String::class))` untuk memvalidasi kelengkapan graf dependensi lintas modul. `Int` mewakili `movieId`/`genreId` dari `parametersOf`, `String` mewakili token yang dipakai `TokenInterceptor`.
 
 ---
 
@@ -107,14 +107,14 @@ graph TD
 
 ### A. Parallel Detail & Trailer Fetching (Concurrency + Error Handling)
 
-Memetakan bagaimana `MovieDetailViewModel` (`:feature:moviedetail`) mengeksekusi dua *use case* secara paralel menggunakan Coroutines `async/await` serta menangani skenario gagal (*negative case*).
+Memetakan bagaimana `MovieDetailViewModel` (`:feature:details`) mengeksekusi dua *use case* secara paralel menggunakan Coroutines `async/await` serta menangani skenario gagal (*negative case*).
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User
-    participant UI as MovieDetailScreen<br/>(:feature:moviedetail)
-    participant VM as MovieDetailViewModel<br/>(:feature:moviedetail)
+    participant UI as MovieDetailScreen<br/>(:feature:details)
+    participant VM as MovieDetailViewModel<br/>(:feature:details)
     participant UC1 as GetMovieDetailUseCase<br/>(:domain)
     participant UC2 as GetMovieTrailerUseCase<br/>(:domain)
     participant Repo as MovieRepositoryImpl<br/>(:data)
@@ -160,7 +160,7 @@ Memetakan alur *endless scrolling* pada daftar film berdasarkan genre maupun ula
 sequenceDiagram
     autonumber
     actor User
-    participant Grid as LazyVerticalGrid<br/>(:feature:movielist)
+    participant Grid as LazyVerticalGrid<br/>(:feature:movies)
     participant Pager as Paging 3 Pipeline
     participant Source as DiscoverMoviesPagingSource<br/>(:data)
     participant API as TmdbApiService<br/>(:core:network)
@@ -208,7 +208,7 @@ sequenceDiagram
 
 ### ADR-003: Single `LazyColumn` pada `MovieDetailScreen` untuk Detail & Ulasan Berpaginasi
 
-* **Context:** Halaman detail (`:feature:moviedetail`) menampilkan informasi utama film, tombol trailer YouTube, dan daftar ulasan pengguna yang mendukung *endless scrolling*.
+* **Context:** Halaman detail (`:feature:details`) menampilkan informasi utama film, tombol trailer YouTube, dan daftar ulasan pengguna yang mendukung *endless scrolling*.
 * **Decision:** Menyatukan seluruh elemen halaman detail ke dalam satu `LazyColumn` menggunakan blok `item { ... }` untuk header/sinopsis dan `items(reviews.itemCount)` untuk ulasan, dibandingkan membungkusnya dalam `Column(Modifier.verticalScroll(...))`.
 * **Consequences:**
   * *(+) Positif:* Menghindari *runtime crash* akibat *nested scrollable containers* dengan tinggi tak terbatas (*infinite height constraints*) di Jetpack Compose, sekaligus menjaga performa *recycling* item ulasan tetap optimal.
@@ -231,7 +231,7 @@ sequenceDiagram
 ### ADR-006: Multi-Module Architecture by Layer & Feature (`:core`, `:domain`, `:data`, `:feature:*`)
 
 * **Context:** Aplikasi memiliki tiga alur fitur utama (Daftar Genre, Daftar Film Berpaginasi, Detail + Trailer + Ulasan) dan membutuhkan pembatasan arsitektur yang tegas agar layer UI tidak mengakses DTO jaringan secara langsung.
-* **Decision:** Memecah proyek menjadi modul `:core:common`, `:core:network`, `:core:ui`, `:domain` (*Pure Kotlin*), `:data`, serta modul fitur independen (`:feature:genres`, `:feature:movielist`, `:feature:moviedetail`).
+* **Decision:** Memecah proyek menjadi modul `:core:common`, `:core:network`, `:core:ui`, `:domain` (*logika murni*), `:data`, serta modul fitur independen (`:feature:genres`, `:feature:movies`, `:feature:details`).
 * **Consequences:**
   * *(+) Positif:* Enforced dependency boundaries di level compiler (modul `:feature:*` tidak dapat mengimpor Retrofit/DTO), kompilasi paralel Gradle lebih cepat, dan `:domain` dapat diuji menggunakan JUnit murni tanpa emulator/Robolectric.
   * *(-) Negatif:* Penambahan konfigurasi Gradle awal antar-modul.
@@ -322,3 +322,13 @@ erDiagram
    * Menggunakan *Composite Primary Key* `(movie_id, genre_id)` karena satu film yang sama bisa muncul pada urutan halaman yang berbeda di genre *Action* maupun *Comedy*.
 4. **Partial vs Full Entity Hydration (`is_detail_loaded` pada `MOVIES`):**
    * Endpoint `/discover/movie` hanya mengembalikan ringkasan film (`runtime` dan `tagline` belum tersedia), sedangkan `/movie/{id}` mengembalikan data lengkap. Flag `is_detail_loaded` mencegah data ringkasan dari endpoint *discover* menimpa kolom detail yang sudah tersimpan saat terjadi *upsert*.
+
+---
+
+## 5. Strategi Testing & Status
+
+| Lapisan | Status |
+|---|---|
+| Unit test (JUnit 5 Jupiter dengan `@ParameterizedTest`, MockK, Turbine, coroutines-test, paging-testing): formatter, DTO parsing, `TokenInterceptor`, use case, mapper, `PagingSource`, `MovieRepositoryImpl`, ViewModel, verifikasi graf Koin | Selesai (142 test) |
+| Uji manual di emulator (lihat `qa_test_cases_and_summary.md`) | Selesai |
+| Compose UI test dan instrumented test (`androidTest`) | **Segera ditambahkan** |
