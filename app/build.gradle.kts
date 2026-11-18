@@ -30,7 +30,6 @@ android {
             )
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }
     }
@@ -48,7 +47,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    api(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
     implementation(project(":domain"))
@@ -57,12 +56,12 @@ dependencies {
     implementation(project(":feature:movies"))
     implementation(project(":feature:details"))
 
+    api(libs.bundles.koin.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
     implementation(libs.bundles.navigation3)
-    implementation(libs.bundles.koin.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.appcompat)
@@ -74,6 +73,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     // Koin DI Graph Verification Test
-    testImplementation(libs.junit)
-    testImplementation(libs.koin.test.junit4)
+    testImplementation(libs.bundles.unit.test)
+    testImplementation(libs.koin.test)
 }
