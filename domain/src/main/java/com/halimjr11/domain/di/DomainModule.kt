@@ -3,6 +3,7 @@ package com.halimjr11.domain.di
 import com.halimjr11.domain.usecase.DiscoverMoviesUseCase
 import com.halimjr11.domain.usecase.GetGenresUseCase
 import com.halimjr11.domain.usecase.GetMovieDetailUseCase
+import com.halimjr11.domain.usecase.GetMovieReviewHighlightsUseCase
 import com.halimjr11.domain.usecase.GetMovieReviewsUseCase
 import com.halimjr11.domain.usecase.GetMovieTrailerUseCase
 import org.koin.core.module.dsl.factoryOf
@@ -15,4 +16,5 @@ val domainModule = module {
     factoryOf(::GetMovieDetailUseCase)
     factoryOf(::GetMovieTrailerUseCase)
     factoryOf(::GetMovieReviewsUseCase)
+    factoryOf(::GetMovieReviewHighlightsUseCase)
 }

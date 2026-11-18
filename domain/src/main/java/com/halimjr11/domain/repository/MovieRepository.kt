@@ -15,4 +15,6 @@ interface MovieRepository {
     suspend fun getMovieDetail(movieId: Int): NetworkResult<MovieDetail>
     suspend fun getMovieTrailer(movieId: Int): NetworkResult<VideoTrailer?>
     fun getMovieReviews(movieId: Int): Flow<PagingData<Review>>
+    /** First [limit] reviews, for the detail screen. The full list is [getMovieReviews]. */
+    suspend fun getReviewHighlights(movieId: Int, limit: Int): NetworkResult<List<Review>>
 }
