@@ -32,7 +32,7 @@ class MovieRepositoryImpl(
     override suspend fun getGenres(): NetworkResult<List<Genre>> =
         safeCall { api.getGenres().genres.toDomain() }
 
-    override fun discoverMoviesByGenre(genreId: Int): Flow<PagingData<Movie>> =
+    override fun discoverMovies(genreId: Int?): Flow<PagingData<Movie>> =
         Pager(pagingConfig) { DiscoverMoviesPagingSource(api, genreId) }.flow
 
     override suspend fun getMovieDetail(movieId: Int): NetworkResult<MovieDetail> =

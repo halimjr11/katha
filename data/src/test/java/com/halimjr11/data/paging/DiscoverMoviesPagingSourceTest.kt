@@ -59,6 +59,16 @@ class DiscoverMoviesPagingSourceTest {
         assertEquals(next, result.nextKey)
     }
 
+    @Test fun withoutGenreItLoadsAllMovies() = runTest {
+        val all = DiscoverMoviesPagingSource(api, genreId = null)
+        coEvery { api.discoverMovies(null, 1) } returns DiscoverMoviesResponseDto(
+            results = listOf(MovieDto(id = 1)), totalPages = 3
+        )
+        val page = all.load(refresh(null)) as LoadResult.Page
+        assertEquals(listOf(1), page.data.map { it.id })
+        assertEquals(2, page.nextKey)
+    }
+
     @Test fun nullBodyFieldsDoNotCrash() = runTest {
         coEvery { api.discoverMovies(28, 1) } returns DiscoverMoviesResponseDto()
         val page = source.load(refresh(null)) as LoadResult.Page

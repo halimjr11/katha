@@ -11,7 +11,7 @@ private const val TMDB_MAX_PAGE = 500
 
 class DiscoverMoviesPagingSource(
     private val api: TmdbApiService,
-    private val genreId: Int
+    private val genreId: Int?
 ) : PagingSource<Int, Movie>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Movie> {

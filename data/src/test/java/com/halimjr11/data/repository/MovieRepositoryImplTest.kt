@@ -95,8 +95,16 @@ class MovieRepositoryImplTest {
         coEvery { api.discoverMovies(28, 1) } returns DiscoverMoviesResponseDto(
             results = listOf(MovieDto(id = 1, title = "A"), MovieDto(id = 2, title = "B")), totalPages = 1
         )
-        val items = repo.discoverMoviesByGenre(28).asSnapshot()
+        val items = repo.discoverMovies(28).asSnapshot()
         assertEquals(listOf("A", "B"), items.map { it.title })
+    }
+
+    @Test fun discoverWithoutGenreLoadsAllMovies() = runTest {
+        coEvery { api.discoverMovies(null, 1) } returns DiscoverMoviesResponseDto(
+            results = listOf(MovieDto(id = 7, title = "Popular")), totalPages = 1
+        )
+        val items = repo.discoverMovies(null).asSnapshot()
+        assertEquals(listOf("Popular"), items.map { it.title })
     }
 
     @Test fun reviewsFlowEmitsMappedReviews() = runTest {
