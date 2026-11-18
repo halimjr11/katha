@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
@@ -64,8 +65,46 @@ class GenreListViewModelTest {
         coVerify(exactly = 2) { useCase() }
     }
 
+    // Search field: case-insensitive "contains" on the genre name; blank shows everything
+    @ParameterizedTest(name = "[{index}] query \"{0}\" -> {1}")
+    @CsvSource(
+        value = [
+            "NULL, 'Action|Adventure|Drama|Science Fiction'",
+            "act, Action",
+            "ADV, Adventure",
+            "'  fi  ', Science Fiction",
+            "a, 'Action|Adventure|Drama'",
+            "zzz, ''",
+        ],
+        nullValues = ["NULL"]
+    )
+    fun searchFiltersGenresByName(query: String?, expected: String) {
+        val state = GenreListUiState(isLoading = false, genres = all, query = query.orEmpty())
+        assertEquals(expected.split("|").filter { it.isNotEmpty() }, state.visibleGenres.map { it.name })
+    }
+
+    @Test fun queryUpdatesStateAndSurvivesRetry() = runTest(dispatcher) {
+        coEvery { useCase() } returns NetworkResult.Error("offline")
+        val vm = GenreListViewModel(useCase)
+        vm.uiState.test {
+            awaitItem() // loading
+            awaitItem() // error
+            vm.onQueryChange("dra")
+            assertEquals("dra", awaitItem().query)
+
+            coEvery { useCase() } returns NetworkResult.Success(all)
+            vm.load()
+            assertTrue(awaitItem().isLoading)
+            val loaded = awaitItem()
+            assertEquals("dra", loaded.query)
+            assertEquals(listOf("Drama"), loaded.visibleGenres.map { it.name })
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     companion object {
         private val action = Genre(28, "Action")
+        private val all = listOf(action, Genre(12, "Adventure"), Genre(18, "Drama"), Genre(878, "Science Fiction"))
 
         @JvmStatic fun scenarios(): Stream<Arguments> = Stream.of(
             Arguments.argumentSet("use case returns 1 genre -> Loading, then genres shown", NetworkResult.Success(listOf(action)), GenreListUiState(false, listOf(action), null)),

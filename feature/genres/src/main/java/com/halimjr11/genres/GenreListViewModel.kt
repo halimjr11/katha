@@ -14,8 +14,13 @@ import kotlinx.coroutines.launch
 data class GenreListUiState(
     val isLoading: Boolean = true,
     val genres: List<Genre> = emptyList(),
-    val error: String? = null
-)
+    val error: String? = null,
+    val query: String = ""
+) {
+    /** Genres matching the search field (case-insensitive); all of them when the query is blank. */
+    val visibleGenres: List<Genre>
+        get() = query.trim().let { q -> if (q.isEmpty()) genres else genres.filter { it.name.contains(q, ignoreCase = true) } }
+}
 
 class GenreListViewModel(private val getGenres: GetGenresUseCase) : ViewModel() {
 
@@ -26,15 +31,20 @@ class GenreListViewModel(private val getGenres: GetGenresUseCase) : ViewModel() 
         load()
     }
 
+    fun onQueryChange(query: String) {
+        _uiState.update { it.copy(query = query) }
+    }
+
     fun load() {
         viewModelScope.launch {
-            _uiState.update { GenreListUiState(isLoading = true) }
+            val query = _uiState.value.query // keep what the user typed across retries
+            _uiState.update { GenreListUiState(isLoading = true, query = query) }
             _uiState.value = when (val result = getGenres()) {
                 is NetworkResult.Success ->
-                    if (result.data.isEmpty()) GenreListUiState(isLoading = false, error = EMPTY_MESSAGE)
-                    else GenreListUiState(isLoading = false, genres = result.data)
+                    if (result.data.isEmpty()) GenreListUiState(isLoading = false, error = EMPTY_MESSAGE, query = query)
+                    else GenreListUiState(isLoading = false, genres = result.data, query = query)
 
-                is NetworkResult.Error -> GenreListUiState(isLoading = false, error = ERROR_MESSAGE)
+                is NetworkResult.Error -> GenreListUiState(isLoading = false, error = ERROR_MESSAGE, query = query)
             }
         }
     }
