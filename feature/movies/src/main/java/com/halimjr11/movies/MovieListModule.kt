@@ -1,9 +1,9 @@
 package com.halimjr11.movies
 
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-// genreId is supplied at call site via parametersOf
+// genreId is optional: parametersOf(id) filters, no parameter means all movies
 val movieListModule = module {
-    viewModelOf(::MovieListViewModel)
+    viewModel { params -> MovieListViewModel(genreId = params.getOrNull(), discoverMovies = get()) }
 }

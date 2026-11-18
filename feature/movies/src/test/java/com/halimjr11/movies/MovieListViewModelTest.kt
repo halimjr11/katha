@@ -3,7 +3,7 @@ package com.halimjr11.movies
 import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import com.halimjr11.domain.model.Movie
-import com.halimjr11.domain.usecase.DiscoverMoviesByGenreUseCase
+import com.halimjr11.domain.usecase.DiscoverMoviesUseCase
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieListViewModelTest {
-    private val useCase = mockk<DiscoverMoviesByGenreUseCase>()
+    private val useCase = mockk<DiscoverMoviesUseCase>()
 
     // runTest must share this dispatcher/scheduler, or paging work on Main never advances
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -43,6 +43,13 @@ class MovieListViewModelTest {
         val vm = MovieListViewModel(28, useCase)
         assertEquals(listOf(1, 2), vm.movies.asSnapshot().map { it.id })
         verify(exactly = 1) { useCase(28) }
+    }
+
+    @Test fun withoutGenreItShowsAllMovies() = runTest(testDispatcher) {
+        every { useCase(null) } returns flowOf(PagingData.from(listOf(movie(5)), idle))
+        val vm = MovieListViewModel(null, useCase)
+        assertEquals(listOf(5), vm.movies.asSnapshot().map { it.id })
+        verify(exactly = 1) { useCase(null) }
     }
 
     @Test fun emptyGenreEmitsNoItems() = runTest(testDispatcher) {

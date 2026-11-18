@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,20 +39,41 @@ import com.halimjr11.ui.components.RemoteImage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+/** Home: all movies. The search icon opens the genre search. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieListScreen(
+fun MoviesHomeScreen(
+    onSearchGenres: () -> Unit,
+    onMovieClick: (movieId: Int) -> Unit,
+    viewModel: MovieListViewModel = koinViewModel(key = "movies_all", parameters = { parametersOf() })
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Katha") },
+                actions = {
+                    IconButton(onClick = onSearchGenres) {
+                        Icon(Icons.Filled.Search, contentDescription = "Search genres")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        MovieGrid(viewModel, onMovieClick, Modifier.padding(padding))
+    }
+}
+
+/** Movies of one genre, reached from the genre search. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GenreMoviesScreen(
     genreId: Int,
     genreName: String,
     onBack: () -> Unit,
     onMovieClick: (movieId: Int) -> Unit,
     // key: one ViewModel per genre, even if the back stack holds several
-    viewModel: MovieListViewModel = koinViewModel(key = "movies_$genreId", parameters = { parametersOf(genreId) })
+    viewModel: MovieListViewModel = koinViewModel(key = "movies_genre_$genreId", parameters = { parametersOf(genreId) })
 ) {
-    val movies = viewModel.movies.collectAsLazyPagingItems()
-    val refresh = movies.loadState.refresh
-    val append = movies.loadState.append
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -65,30 +86,44 @@ fun MovieListScreen(
             )
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            when {
-                refresh is LoadState.Loading && movies.itemCount == 0 -> FullScreenLoading()
-                refresh is LoadState.Error && movies.itemCount == 0 ->
-                    FullScreenError("Couldn't load movies. Check your connection and try again.", movies::retry)
-                refresh is LoadState.NotLoading && movies.itemCount == 0 ->
-                    Text("No movies found.", Modifier.align(Alignment.Center))
-                else -> LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // No item key: TMDB discover can repeat ids across pages, and a duplicate key crashes Lazy layouts.
-                    items(movies.itemCount) { index ->
-                        movies[index]?.let { MovieCard(it, onClick = { onMovieClick(it.id) }) }
-                    }
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        PagingFooter(
-                            isLoading = append is LoadState.Loading,
-                            isError = append is LoadState.Error,
-                            onRetry = movies::retry
-                        )
-                    }
+        MovieGrid(viewModel, onMovieClick, Modifier.padding(padding))
+    }
+}
+
+/** Shared by both screens: paged grid with loading, error, empty and append-error states. */
+@Composable
+private fun MovieGrid(
+    viewModel: MovieListViewModel,
+    onMovieClick: (movieId: Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val movies = viewModel.movies.collectAsLazyPagingItems()
+    val refresh = movies.loadState.refresh
+    val append = movies.loadState.append
+
+    Box(modifier.fillMaxSize()) {
+        when {
+            refresh is LoadState.Loading && movies.itemCount == 0 -> FullScreenLoading()
+            refresh is LoadState.Error && movies.itemCount == 0 ->
+                FullScreenError("Couldn't load movies. Check your connection and try again.", movies::retry)
+            refresh is LoadState.NotLoading && movies.itemCount == 0 ->
+                Text("No movies found.", Modifier.align(Alignment.Center))
+            else -> LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // No item key: TMDB discover can repeat ids across pages, and a duplicate key crashes Lazy layouts.
+                items(movies.itemCount) { index ->
+                    movies[index]?.let { MovieCard(it, onClick = { onMovieClick(it.id) }) }
+                }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    PagingFooter(
+                        isLoading = append is LoadState.Loading,
+                        isError = append is LoadState.Error,
+                        onRetry = movies::retry
+                    )
                 }
             }
         }
