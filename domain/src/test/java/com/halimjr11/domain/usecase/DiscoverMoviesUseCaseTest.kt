@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -19,15 +20,15 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.io.IOException
 import java.util.stream.Stream
 
-class DiscoverMoviesByGenreUseCaseTest {
+class DiscoverMoviesUseCaseTest {
     private val repo = mockk<MovieRepository>()
-    private val useCase = DiscoverMoviesByGenreUseCase(repo)
+    private val useCase = DiscoverMoviesUseCase(repo)
 
     // The use case must forward every upstream event untouched: items in order, then complete or error
     @ParameterizedTest(name = "upstream: {argumentSetName}")
     @MethodSource("upstreams")
     fun forwardsEveryUpstreamEvent(emitted: List<PagingData<Movie>>, failure: Throwable?) = runTest {
-        every { repo.discoverMoviesByGenre(28) } returns flow {
+        every { repo.discoverMovies(28) } returns flow {
             emitted.forEach { emit(it) }
             failure?.let { throw it }
         }
@@ -41,9 +42,18 @@ class DiscoverMoviesByGenreUseCaseTest {
     @ValueSource(ints = [28, 18, 35])
     fun passesTheGivenGenreId(genreId: Int) {
         val flow = flowOf(PagingData.empty<Movie>())
-        every { repo.discoverMoviesByGenre(genreId) } returns flow
+        every { repo.discoverMovies(genreId) } returns flow
         assertSame(flow, useCase(genreId))
-        verify(exactly = 1) { repo.discoverMoviesByGenre(genreId) }
+        verify(exactly = 1) { repo.discoverMovies(genreId) }
+    }
+
+    @Test
+    fun noGenreMeansAllMovies() {
+        val flow = flowOf(PagingData.empty<Movie>())
+        every { repo.discoverMovies(null) } returns flow
+        assertSame(flow, useCase())
+        assertSame(flow, useCase(null))
+        verify(exactly = 2) { repo.discoverMovies(null) }
     }
 
     companion object {
