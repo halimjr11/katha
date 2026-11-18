@@ -11,7 +11,7 @@ Multi-Module Clean Architecture · MVVM · Unidirectional Data Flow
 ![Koin](https://img.shields.io/badge/Koin-4.2.2-F58E20)
 ![MinSdk](https://img.shields.io/badge/minSdk-24-blue)
 
-[Arsitektur](#-arsitektur) · [Modul](#-modul) · [Alur Data](#-alur-data) · [Mulai Cepat](#-mulai-cepat) · [Dokumentasi](#-dokumentasi) · [Status](#-status)
+[Screenshots](#-screenshots) · [Arsitektur](#-arsitektur) · [Modul](#-modul) · [Alur Data](#-alur-data) · [Mulai Cepat](#-mulai-cepat) · [Dokumentasi](#-dokumentasi) · [Status](#-status)
 
 </div>
 
@@ -27,6 +27,28 @@ Multi-Module Clean Architecture · MVVM · Unidirectional Data Flow
 | 📖 | **Detail Film** | Backdrop, poster, tagline, durasi, rating, genre, sinopsis |
 | ▶️ | **Trailer** | Dibuka lewat YouTube (Trailer resmi → Trailer → Teaser) |
 | 💬 | **Ulasan** | Detail menampilkan 3 ulasan sorotan; "See all reviews" membuka layar Reviews dengan endless scrolling |
+
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Daftar Film</b></td>
+    <td align="center"><b>Cari Genre</b></td>
+    <td align="center"><b>Detail Film</b></td>
+  </tr>
+  <tr>
+    <td><img height="512px" src="docs/screenshots/movie-list.jpg" alt="Daftar film: grid poster dengan ikon cari genre" width="260"></td>
+    <td><img height="512px" src="docs/screenshots/genres.jpg" alt="Daftar genre dengan kolom pencarian" width="260"></td>
+    <td><img height="512px" src="docs/screenshots/movie-detail.jpg" alt="Detail film: backdrop, trailer, sinopsis dan ulasan sorotan" width="260"></td>
+  </tr>
+  <tr>
+    <td valign="top">Beranda: semua film, endless scrolling. Ikon cari membuka daftar genre.</td>
+    <td valign="top">Kolom pencarian menyaring genre; tap genre untuk melihat film genre itu.</td>
+    <td valign="top">Header, trailer YouTube, sinopsis, dan 3 ulasan sorotan dengan tombol "See all reviews".</td>
+  </tr>
+</table>
+
+> Diambil dari emulator (Pixel, tema terang) dengan data langsung dari TMDB.
 
 ## 🏗 Arsitektur
 
