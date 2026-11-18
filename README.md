@@ -21,8 +21,9 @@ Multi-Module Clean Architecture · MVVM · Unidirectional Data Flow
 
 | | Fitur | Detail |
 |---|---|---|
-| 🎭 | **Genre Film** | Grid genre resmi TMDB |
-| 🎞️ | **Film per Genre** | Endless scrolling (Paging 3), retry saat gagal load halaman berikutnya |
+| 🏠 | **Beranda** | Layar pertama: semua film (endless scrolling) |
+| 🔎 | **Cari Genre** | Ikon cari di beranda membuka daftar genre dengan kolom pencarian |
+| 🎞️ | **Film per Genre** | Tap genre untuk melihat film genre itu.  Endless scrolling (Paging 3), retry saat gagal load halaman berikutnya |
 | 📖 | **Detail Film** | Backdrop, poster, tagline, durasi, rating, genre, sinopsis |
 | ▶️ | **Trailer** | Dibuka lewat YouTube (Trailer resmi → Trailer → Teaser) |
 | 💬 | **Ulasan** | Endless scrolling di satu `LazyColumn` bersama detail |
@@ -62,7 +63,7 @@ graph TD
 | Use case | Mengembalikan |
 |---|---|
 | `GetGenresUseCase` | `NetworkResult<List<Genre>>` |
-| `DiscoverMoviesByGenreUseCase` | `Flow<PagingData<Movie>>` |
+| `DiscoverMoviesUseCase` (genre opsional; tanpa genre = semua film) | `Flow<PagingData<Movie>>` |
 | `GetMovieDetailUseCase` | `NetworkResult<MovieDetail>` |
 | `GetMovieTrailerUseCase` | `NetworkResult<VideoTrailer?>` |
 | `GetMovieReviewsUseCase` | `Flow<PagingData<Review>>` |

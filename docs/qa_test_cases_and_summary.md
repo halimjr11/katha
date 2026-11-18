@@ -6,6 +6,8 @@
 **Data:** live TMDB API v3. Offline cases used `svc wifi/data disable`.
 **Evidence:** screenshots in the session scratchpad `/private/tmp/claude-501/qa/` (not part of the repo).
 
+> **Flow change:** after this report the app became *movies-first*: Home (all movies) → search icon → Genres with a search field → genre movies → detail. The manual cases below were run on the earlier genres-first flow and have not been re-run in full. The new path (home, genre search "dra" → Drama, genre movies, back keeps the query) was checked once on the emulator.
+
 Legend: ✅ Pass · ⚠️ Pass with note · ⏭ Not executed on device (reason given)
 
 ---
@@ -87,7 +89,7 @@ Unit tests run on **JUnit 5 (Jupiter)**; scenarios are `@ParameterizedTest` rows
 | :core:network | `TokenInterceptorTest` | 1 | Bearer (from BuildConfig) and Accept headers |
 | :core:network | `DtoParsingTest` | 4 | Gson: nullable DTOs, snake_case, unknown keys, null rating |
 | :domain | `GetGenresUseCaseTest` | 5 | Rows: genres, empty list, offline, 401, 500 |
-| :domain | `DiscoverMoviesByGenreUseCaseTest` | 6 | Turbine rows: two emissions, empty flow, upstream error; genre id passed (3 genres) |
+| :domain | `DiscoverMoviesUseCaseTest` | 7 | Turbine rows: two emissions, empty flow, upstream error; genre id passed (3 genres); no genre = all movies |
 | :domain | `GetMovieDetailUseCaseTest` | 4 | Rows: found, another movie, 404, offline |
 | :domain | `GetMovieTrailerUseCaseTest` | 4 | Rows: trailer, null trailer, offline, 404 |
 | :domain | `GetMovieReviewsUseCaseTest` | 6 | Turbine rows (3 upstream behaviours); movie id passed (3 movies) |

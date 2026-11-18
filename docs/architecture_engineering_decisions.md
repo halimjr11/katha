@@ -16,7 +16,7 @@ Katha/
 ├── domain/                         # Android library (tanpa UI): Models, Repository Interfaces, UseCases, domainModule (tanpa class Android)
 ├── data/                           # Android Library: MovieRepositoryImpl, Mappers, PagingSources, dataModule
 └── feature/
-    ├── genres/                     # Android Compose: GenreListScreen, GenreListViewModel, genresModule
+    ├── genres/                     # Android Compose: GenreListScreen (search field), GenreListViewModel, genresModule
     ├── movies/                     # Android Compose: MovieByGenreScreen, MovieByGenreViewModel, movieListModule
     └── details/                    # Android Compose: MovieDetailScreen, MovieDetailViewModel, movieDetailModule
 ```
@@ -38,7 +38,7 @@ graph TD
 
     subgraph FeatureLayer ["Feature Modules (Presentation + MVVM)"]
         F_GENRE[":feature:genres"<br/>GenreListScreen & ViewModel]
-        F_LIST[":feature:movies"<br/>MovieByGenreScreen & ViewModel]
+        F_LIST[":feature:movies"<br/>MoviesHomeScreen, GenreMoviesScreen & ViewModel]
         F_DETAIL[":feature:details"<br/>MovieDetailScreen & ViewModel]
     end
 

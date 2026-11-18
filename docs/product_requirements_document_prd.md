@@ -11,14 +11,20 @@
 
 ## 2. User Flow & Navigation Map
 ```text
-[GenreListScreen] (Start Destination)
+[MoviesHomeScreen] (Start Destination: all movies, endless grid)
        │
-       ├── Tap Genre Card (genreId, genreName)
-       ▼
-[MovieByGenreScreen] (Endless Grid)
-       │
-       ├── Tap Movie Card (movieId)
-       ▼
+       ├── Tap Movie Card (movieId) ───────────────┐
+       │                                           │
+       ├── Tap Search icon                         │
+       ▼                                           │
+[GenreListScreen] (Search field filters genres)    │
+       │                                           │
+       ├── Tap Genre Card (genreId, genreName)     │
+       ▼                                           │
+[GenreMoviesScreen] (Endless grid, one genre)      │
+       │                                           │
+       ├── Tap Movie Card (movieId)                │
+       ▼                                           ▼
 [MovieDetailScreen] (Primary Info + Trailer CTA + Endless Reviews)
        │
        └── Tap "Watch Trailer" ──► External YouTube App / Custom Tab Intent
