@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,20 +16,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,9 +37,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,15 +47,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.halimjr11.domain.model.MovieDetail
-import com.halimjr11.domain.model.Review
+import com.halimjr11.domain.usecase.GetMovieReviewHighlightsUseCase
 import com.halimjr11.domain.model.VideoTrailer
 import com.halimjr11.ui.components.FullScreenError
 import com.halimjr11.ui.components.FullScreenLoading
-import com.halimjr11.ui.components.PagingFooter
 import com.halimjr11.ui.components.RemoteImage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -72,11 +60,11 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun MovieDetailScreen(
     movieId: Int,
+    onSeeAllReviews: () -> Unit,
     onBack: () -> Unit,
     viewModel: MovieDetailViewModel = koinViewModel(key = "detail_$movieId", parameters = { parametersOf(movieId) })
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val reviews = viewModel.reviews.collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
@@ -96,16 +84,12 @@ fun MovieDetailScreen(
                 state.isLoading -> FullScreenLoading()
                 detail == null -> FullScreenError(
                     message = state.error ?: MovieDetailViewModel.ERROR_MESSAGE,
-                    onRetry = {
-                        viewModel.load()
-                        reviews.refresh() // reviews are a separate paging flow; retry them too
-                    }
+                    onRetry = viewModel::load
                 )
-                // One LazyColumn for detail + paged reviews: avoids nested scrollables (ADR-003).
                 else -> LazyColumn(Modifier.fillMaxSize()) {
                     item { Header(detail) }
                     item { Info(detail, state.trailer) }
-                    reviewItems(reviews)
+                    reviewHighlights(state, onRetry = viewModel::retryReviews, onSeeAll = onSeeAllReviews)
                 }
             }
         }
@@ -163,65 +147,27 @@ private fun Info(detail: MovieDetail, trailer: VideoTrailer?) {
     }
 }
 
-private fun LazyListScope.reviewItems(reviews: LazyPagingItems<Review>) {
-    val refresh = reviews.loadState.refresh
-    val append = reviews.loadState.append
-    if (reviews.itemCount == 0) {
-        item {
-            Box(Modifier.fillMaxWidth().padding(24.dp), Alignment.Center) {
-                when (refresh) {
-                    is LoadState.Loading -> CircularProgressIndicator()
-                    is LoadState.Error -> Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Failed to load reviews")
-                        TextButton(onClick = reviews::retry) { Text("Retry") }
-                    }
-                    is LoadState.NotLoading -> Text("No user reviews yet.")
-                }
+/** Up to three highlighted reviews, then a button to the full (endlessly scrolling) list. */
+private fun LazyListScope.reviewHighlights(state: MovieDetailUiState, onRetry: () -> Unit, onSeeAll: () -> Unit) {
+    when {
+        state.reviewsFailed -> item {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("Failed to load reviews")
+                TextButton(onClick = onRetry) { Text("Retry") }
             }
         }
-    }
-    items(reviews.itemCount) { index ->
-        reviews[index]?.let { ReviewCard(it) }
-    }
-    item {
-        PagingFooter(append is LoadState.Loading, append is LoadState.Error, reviews::retry)
-    }
-}
-
-@Composable
-private fun ReviewCard(review: Review) {
-    var expanded by rememberSaveable(review.id) { mutableStateOf(false) }
-    val long = review.content.length > 240
-    ElevatedCard(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (review.avatarUrl.isNotBlank()) {
-                    RemoteImage(review.avatarUrl, review.author, Modifier.size(40.dp).clip(CircleShape))
-                } else {
-                    Box(
-                        Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
-                        Alignment.Center
-                    ) { Text(review.author.take(1).uppercase()) }
+        state.highlights.isEmpty() -> item {
+            Text("No user reviews yet.", Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        }
+        else -> {
+            items(state.highlights, key = { it.id }) { ReviewCard(it) }
+            if (state.highlights.size >= GetMovieReviewHighlightsUseCase.DEFAULT_LIMIT) {
+                item {
+                    OutlinedButton(
+                        onClick = onSeeAll,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) { Text("See all reviews") }
                 }
-                Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                    Text(review.author, style = MaterialTheme.typography.titleSmall)
-                    Text(review.date, style = MaterialTheme.typography.bodySmall)
-                }
-                if (review.rating.isNotBlank()) Text("★ ${review.rating}", style = MaterialTheme.typography.labelLarge)
-            }
-            Text(
-                review.content,
-                maxLines = if (expanded) Int.MAX_VALUE else 5,
-                overflow = TextOverflow.Ellipsis,
-                modifier = if (long) Modifier.clickable { expanded = !expanded } else Modifier
-            )
-            if (long) {
-                Text(
-                    if (expanded) "Show less" else "Read more",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.clickable { expanded = !expanded }
-                )
             }
         }
     }

@@ -6,4 +6,5 @@ import org.koin.dsl.module
 // movieId is supplied at call site via parametersOf
 val movieDetailModule = module {
     viewModelOf(::MovieDetailViewModel)
+    viewModelOf(::MovieReviewsViewModel)
 }
