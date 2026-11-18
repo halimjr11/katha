@@ -26,7 +26,7 @@ Multi-Module Clean Architecture · MVVM · Unidirectional Data Flow
 | 🎞️ | **Film per Genre** | Tap genre untuk melihat film genre itu.  Endless scrolling (Paging 3), retry saat gagal load halaman berikutnya |
 | 📖 | **Detail Film** | Backdrop, poster, tagline, durasi, rating, genre, sinopsis |
 | ▶️ | **Trailer** | Dibuka lewat YouTube (Trailer resmi → Trailer → Teaser) |
-| 💬 | **Ulasan** | Endless scrolling di satu `LazyColumn` bersama detail |
+| 💬 | **Ulasan** | Detail menampilkan 3 ulasan sorotan; "See all reviews" membuka layar Reviews dengan endless scrolling |
 
 ## 🏗 Arsitektur
 
@@ -66,7 +66,8 @@ graph TD
 | `DiscoverMoviesUseCase` (genre opsional; tanpa genre = semua film) | `Flow<PagingData<Movie>>` |
 | `GetMovieDetailUseCase` | `NetworkResult<MovieDetail>` |
 | `GetMovieTrailerUseCase` | `NetworkResult<VideoTrailer?>` |
-| `GetMovieReviewsUseCase` | `Flow<PagingData<Review>>` |
+| `GetMovieReviewsUseCase` | `Flow<PagingData<Review>>` (layar Reviews, endless scrolling) |
+| `GetMovieReviewHighlightsUseCase` | `NetworkResult<List<Review>>` (3 ulasan pertama untuk detail) |
 
 </details>
 

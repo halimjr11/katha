@@ -6,6 +6,8 @@
 **Data:** live TMDB API v3. Offline cases used `svc wifi/data disable`.
 **Evidence:** screenshots in the session scratchpad `/private/tmp/claude-501/qa/` (not part of the repo).
 
+> **Reviews change:** the detail screen now shows 3 highlighted reviews and a "See all reviews" button that opens a separate Reviews screen with endless scrolling (checked once on the emulator). TC-27 to TC-32 describe the older single-list behaviour.
+>
 > **Flow change:** after this report the app became *movies-first*: Home (all movies) → search icon → Genres with a search field → genre movies → detail. The manual cases below were run on the earlier genres-first flow and have not been re-run in full. The new path (home, genre search "dra" → Drama, genre movies, back keeps the query) was checked once on the emulator.
 
 Legend: ✅ Pass · ⚠️ Pass with note · ⏭ Not executed on device (reason given)

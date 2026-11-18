@@ -79,21 +79,23 @@
   * **AC 5.1 (Positive):** Sistem memilih video dengan `site == "YouTube"` dan prioritas `type == "Trailer"` (fallback ke `"Teaser"` jika `"Trailer"` tidak tersedia).
   * **AC 5.2 (Negative - No Trailer):** Jika film tidak memiliki video YouTube, tombol trailer disembunyikan atau ditampilkan dalam keadaan *disabled* dengan label **"Trailer Unavailable"**.
 
-### FR-05: User Reviews with Endless Scrolling (AC 4 & AC 6)
-* **Deskripsi:** Menampilkan ulasan pengguna untuk film tersebut di bagian bawah halaman detail dengan dukungan *endless scrolling*.
+### FR-05: User Reviews (Highlights + All Reviews with Endless Scrolling) (AC 4 & AC 6)
+* **Deskripsi:** Halaman detail hanya menampilkan **3 ulasan sorotan**. Tombol **"See all reviews"** membuka layar **Reviews** terpisah yang memuat seluruh ulasan dengan *endless scrolling*.
 * **UI/UX Behavior:**
-  * Berada dalam satu kontainer `LazyColumn` yang sama dengan detail film (menghindari *nested scrolling*).
+  * Halaman detail: maksimal 3 ulasan (halaman pertama), lalu tombol **"See all reviews"** (hanya muncul bila ada 3 ulasan). Halaman detail **tidak** melakukan *endless scrolling*.
+  * Layar **Reviews** (`MovieReviewsScreen`): `LazyColumn` berpaginasi dengan tombol back ke detail.
   * Setiap kartu ulasan menampilkan: **Nama Author**, **Avatar** (jika tersedia, fallback inisial), **Rating Author** (jika ada), **Tanggal Ulasan**, dan **Konten Ulasan** (dapat di-*expand/collapse* jika terlalu panjang).
 * **Acceptance Criteria:**
-  * **AC 4.1 (Positive & Endless Scroll):** Ulasan dimuat per halaman dan otomatis mengambil halaman berikutnya saat pengguna men-*scroll* ke bawah.
+  * **AC 4.1 (Highlights):** Detail menampilkan paling banyak 3 ulasan; "See all reviews" membuka daftar lengkap.
+  * **AC 4.1b (Endless Scroll):** Di layar Reviews, ulasan dimuat per halaman dan otomatis mengambil halaman berikutnya saat pengguna men-*scroll* ke bawah.
   * **AC 4.2 (Negative - Empty Reviews):** Jika film belum memiliki ulasan (`results` kosong), tampilkan teks *"No user reviews yet."*
-  * **AC 4.3 (Negative - Append Error):** Jika halaman ulasan ke-2+ gagal dimuat, tampilkan tombol **"Retry"** inline di bagian bawah daftar ulasan.
+  * **AC 4.3 (Negative - Error):** Di detail, jika ulasan gagal dimuat tampilkan "Failed to load reviews" + **"Retry"** inline (hanya memuat ulang bagian ulasan). Di layar Reviews, jika halaman ke-2+ gagal dimuat, tampilkan **"Retry"** inline di bagian bawah daftar.
 
 ---
 
 ## 4. Non-Functional Requirements (NFR)
 * **Architecture:** Strict separation of concerns (**Presentation** -> **Domain** -> **Data**). Layer `Domain` tidak boleh memakai class Android, Retrofit, maupun OkHttp (modul Android library tanpa UI; Koin di-expose lewat `:core:common`).
-* **Concurrency:** Menggunakan `viewModelScope`, `Dispatchers.IO`, dan `async/await` untuk pemanggilan paralel (`getMovieDetail` & `getMovieTrailer`).
+* **Concurrency:** Menggunakan `viewModelScope`, `Dispatchers.IO`, dan `async/await` untuk pemanggilan paralel (`getMovieDetail`, `getMovieTrailer` & `getReviewHighlights`).
 * **Security:** `TMDB_BEARER_TOKEN` disimpan di `local.properties` dan diakses melalui `BuildConfig`, tidak pernah di-*hardcode* ke dalam repository Git.
 * **Testability:** Unit test mencakup verifikasi DI graph (`koin-test` `.verify()`), `PagingSource`, `Mapper`, `Repository`, use case, dan `ViewModel` (*positive & negative cases*).
   * **Catatan:** Compose UI test dan instrumented test (`androidTest`) belum ada dan akan segera ditambahkan.

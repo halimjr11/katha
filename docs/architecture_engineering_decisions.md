@@ -206,12 +206,13 @@ sequenceDiagram
   * *(+) Positif:* Manajemen state halaman (`Refresh`, `Append`, `Prepend`), pembatalan *request* otomatis saat scroll cepat, dan mekanisme `pagingItems.retry()` sudah terstandarisasi tanpa risiko *race condition* atau *duplicate items*.
   * *(-) Negatif:* Memerlukan komponen footer khusus (`:core:ui`) untuk merender indikator *loading* dan tombol *retry* pada `loadState.append`.
 
-### ADR-003: Single `LazyColumn` pada `MovieDetailScreen` untuk Detail & Ulasan Berpaginasi
+### ADR-003: Detail Menampilkan 3 Ulasan Sorotan, Daftar Lengkap di Layar Terpisah
 
-* **Context:** Halaman detail (`:feature:details`) menampilkan informasi utama film, tombol trailer YouTube, dan daftar ulasan pengguna yang mendukung *endless scrolling*.
-* **Decision:** Menyatukan seluruh elemen halaman detail ke dalam satu `LazyColumn` menggunakan blok `item { ... }` untuk header/sinopsis dan `items(reviews.itemCount)` untuk ulasan, dibandingkan membungkusnya dalam `Column(Modifier.verticalScroll(...))`.
+* **Context:** Halaman detail (`:feature:details`) menampilkan informasi utama film, tombol trailer YouTube, dan daftar ulasan pengguna. Menaruh *endless scrolling* di halaman yang sama dengan detail membuat halaman panjang dan membebani konten utama.
+* **Decision:** Detail hanya menampilkan 3 ulasan sorotan (halaman pertama API, `GetMovieReviewHighlightsUseCase`) di dalam `LazyColumn` yang sama dengan detail. Tombol "See all reviews" membuka `MovieReviewsScreen` (modul yang sama) yang memakai `Flow<PagingData<Review>>` (`GetMovieReviewsUseCase`) dengan *endless scrolling*.
 * **Consequences:**
-  * *(+) Positif:* Menghindari *runtime crash* akibat *nested scrollable containers* dengan tinggi tak terbatas (*infinite height constraints*) di Jetpack Compose, sekaligus menjaga performa *recycling* item ulasan tetap optimal.
+  * *(+) Positif:* Halaman detail singkat dan cepat dimuat (3 ulasan ikut dimuat paralel dengan detail dan trailer), sedangkan paginasi hanya berjalan di layar yang memang untuk ulasan. Tetap satu `LazyColumn` per layar, jadi tidak ada *nested scrollable containers*.
+  * *(-) Negatif:* Dua use case ulasan (sorotan dan berpaginasi) dan satu layar tambahan.
 
 ### ADR-004: Eksekusi YouTube Trailer via Native Intent Launcher
 
