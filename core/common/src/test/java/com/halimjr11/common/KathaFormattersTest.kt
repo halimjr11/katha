@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource
 // Each test function runs once per @CsvSource row. NULL = null, '' = empty string, ' ' = blank.
 class KathaFormattersTest {
 
-    @ParameterizedTest(name = "formatRuntime({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] formatRuntime({0} min) -> \"{1}\"")
     @CsvSource(
         value = ["142, 2h 22m", "128, 2h 8m", "120, 2h", "45, 45m", "1, 1m", "0, N/A", "-5, N/A", "NULL, N/A"],
         nullValues = ["NULL"]
@@ -15,7 +15,7 @@ class KathaFormattersTest {
     fun runtime(minutes: Int?, expected: String) =
         assertEquals(expected, KathaFormatters.formatRuntime(minutes))
 
-    @ParameterizedTest(name = "formatReleaseDate({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] formatReleaseDate(\"{0}\") -> \"{1}\"")
     @CsvSource(
         value = [
             "2024-05-15, 15 May 2024",
@@ -34,12 +34,12 @@ class KathaFormattersTest {
     fun releaseDate(input: String?, expected: String) =
         assertEquals(expected, KathaFormatters.formatReleaseDate(input))
 
-    @ParameterizedTest(name = "formatReleaseYear({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] formatReleaseYear(\"{0}\") -> \"{1}\"")
     @CsvSource(value = ["2024-05-15, 2024", "NULL, N/A", "'', N/A"], nullValues = ["NULL"])
     fun releaseYear(input: String?, expected: String) =
         assertEquals(expected, KathaFormatters.formatReleaseYear(input))
 
-    @ParameterizedTest(name = "formatIsoReviewDate({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] formatIsoReviewDate(\"{0}\") -> \"{1}\"")
     @CsvSource(
         value = [
             "2023-07-21T14:22:10.000Z, 21 Jul 2023",
@@ -52,12 +52,12 @@ class KathaFormattersTest {
     fun isoReviewDate(input: String?, expected: String) =
         assertEquals(expected, KathaFormatters.formatIsoReviewDate(input))
 
-    @ParameterizedTest(name = "formatVoteAverage({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] formatVoteAverage({0}) -> \"{1}\"")
     @CsvSource(value = ["7.845, 7.8", "8.0, 8.0", "0.0, NR", "NULL, NR"], nullValues = ["NULL"])
     fun voteAverage(input: Double?, expected: String) =
         assertEquals(expected, KathaFormatters.formatVoteAverage(input))
 
-    @ParameterizedTest(name = "buildPosterUrl({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] buildPosterUrl(path=\"{0}\") -> {1}")
     @CsvSource(
         value = ["/a.jpg, https://image.tmdb.org/t/p/w500/a.jpg", "NULL, NULL", "'', NULL"],
         nullValues = ["NULL"]
@@ -65,7 +65,7 @@ class KathaFormattersTest {
     fun posterUrl(path: String?, expected: String?) =
         assertEquals(expected, KathaFormatters.buildPosterUrl(path))
 
-    @ParameterizedTest(name = "buildBackdropUrl({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] buildBackdropUrl(path=\"{0}\") -> {1}")
     @CsvSource(
         value = ["/b.jpg, https://image.tmdb.org/t/p/w780/b.jpg", "' ', NULL", "NULL, NULL"],
         nullValues = ["NULL"]
@@ -73,12 +73,12 @@ class KathaFormattersTest {
     fun backdropUrl(path: String?, expected: String?) =
         assertEquals(expected, KathaFormatters.buildBackdropUrl(path))
 
-    @ParameterizedTest(name = "buildPosterUrl({0}, {1}) = {2}")
+    @ParameterizedTest(name = "[{index}] buildPosterUrl(path=\"{0}\", size=\"{1}\") -> {2}")
     @CsvSource("/a.jpg, original, https://image.tmdb.org/t/p/original/a.jpg", "/a.jpg, w185, https://image.tmdb.org/t/p/w185/a.jpg")
     fun posterUrlWithCustomSize(path: String, size: String, expected: String) =
         assertEquals(expected, KathaFormatters.buildPosterUrl(path, size))
 
-    @ParameterizedTest(name = "buildAvatarUrl({0}) = {1}")
+    @ParameterizedTest(name = "[{index}] buildAvatarUrl(path=\"{0}\") -> {1}")
     @CsvSource(
         value = [
             "/abc.jpg, https://image.tmdb.org/t/p/w185/abc.jpg",

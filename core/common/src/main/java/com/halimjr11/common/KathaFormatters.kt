@@ -1,23 +1,35 @@
 package com.halimjr11.common
 
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object KathaFormatters {
 
-    private val inputDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US)
-    private val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.US)
+    private val months = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+    // Hand-parsed instead of SimpleDateFormat (not thread-safe) or java.time (needs API 26, minSdk is 24).
+    // Stateless, so safe to call from any thread.
+    /** "2024-05-15" -> "15 May 2024"; null when not a real calendar date. */
+    private fun reformatDate(date: String): String? {
+        val parts = date.split('-')
+        if (parts.size != 3 || parts[0].length != 4 || parts[1].length != 2 || parts[2].length != 2) return null
+        if (!parts.all { p -> p.all { it in '0'..'9' } }) return null
+        val (year, month, day) = parts.map { it.toInt() }
+        if (month !in 1..12 || day !in 1..daysInMonth(year, month)) return null
+        return "${parts[2]} ${months[month - 1]} ${parts[0]}"
+    }
+
+    private fun daysInMonth(year: Int, month: Int): Int = when (month) {
+        2 -> if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) 29 else 28
+        4, 6, 9, 11 -> 30
+        else -> 31
+    }
 
     /**
      * Converts "2024-05-15" -> "15 May 2024"
      */
     fun formatReleaseDate(dateStr: String?): String {
         if (dateStr.isNullOrBlank()) return "Unknown Release Date"
-        return runCatching {
-            LocalDate.parse(dateStr, inputDateFormatter).format(outputDateFormatter)
-        }.getOrDefault(dateStr)
+        return reformatDate(dateStr) ?: dateStr
     }
 
     /**
@@ -47,9 +59,9 @@ object KathaFormatters {
      */
     fun formatIsoReviewDate(isoDate: String?): String {
         if (isoDate.isNullOrBlank()) return ""
-        return runCatching {
-            OffsetDateTime.parse(isoDate).format(outputDateFormatter)
-        }.getOrDefault(isoDate.take(10))
+        // keep the date as written (no timezone shift): only the first 10 chars matter
+        val date = isoDate.take(10)
+        return reformatDate(date) ?: date
     }
 
     /**
